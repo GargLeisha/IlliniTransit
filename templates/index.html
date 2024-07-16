@@ -47,7 +47,7 @@
         loading="lazy"
         allowfullscreen
         referrerpolicy="no-referrer-when-downgrade"
-        src="https://www.google.com/maps/embed/v1/place?key=AIzaSyC7V-XebYwIb7UFZJgOC1HG_MI3kvyDenE&q=University of Illinois Urbana-Champaign,Champaign+IL"
+        src="https://www.google.com/maps/embed/v1/place?key=MAP_KEY&q=University of Illinois Urbana-Champaign,Champaign+IL"
       >
       </iframe>
     </div>
@@ -76,7 +76,7 @@
 
               if (value.length > 2) {
                 fetch(
-                  `https://api.geoapify.com/v1/geocode/autocomplete?text=${value}&apiKey=1df139ec70004766b20c761c341b5019`
+                  `https://api.geoapify.com/v1/geocode/autocomplete?text=${value}&apiKey=GEOAPIFY_API_KEY
                 )
                   .then((response) => response.json())
                   .then((data) => {
