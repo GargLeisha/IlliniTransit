@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,default_lang,feed_start_date,feed_end_date,feed_version,feed_contact_email,feed_contact_url
+Champaign-Urbana Mass Transit District,https://mtd.org/,en,en,20240512,20240810,GTFS Feed 12/05/2024 – 10/08/2024 (Generated: 13/05/2024 9:23:26),mtdweb@mtd.org,https://mtd.org/inside/contact/

@@ -1,0 +1,11 @@
+.venv
+.env
+.gcloudignore
+.google-cloud-sdk-391.0.0-darwin-x86_64.tar.gz
+.mprofile_20240713013722.dat
+.mprofile_20240713013756.dat
+graph.pkl
+
+
+
+
