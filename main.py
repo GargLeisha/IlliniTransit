@@ -1,16 +1,22 @@
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, make_response
 from routes import find_shortest_path_with_user, initialize_graph, return_attributes, find_shortest_path_with_live_updates, return_instructions, calculate_walk_time, address_to_latlong, return_attributes
 from datetime import datetime
 import pytz
 from urllib.parse import quote
 from waitress import serve
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = Flask(__name__)
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template("index.html")
+    google_api_key = os.getenv('MAP_KEY')
+    geoapify_api_key = os.getenv('GEOAPIFY_API_KEY')
+    return render_template("index.html", google_api_key=google_api_key, geoapify_api_key=geoapify_api_key)
 
 @app.route('/transit1')
 def get_route():
@@ -39,14 +45,16 @@ def get_route():
                 entry['leg'] = legs[i]
             timeline_data.append(entry)
 
+        google_api_key = os.getenv('MAP_KEY')
+
         if len(path) > 2:
             # Properly encode each waypoint
             waypoints = '|'.join(quote(wp) for wp in path[1:-1])  # Ensure each waypoint is URL encoded
-            map_url = f"https://www.google.com/maps/embed/v1/directions?key=MAP_KEY&origin={quote(start_point)}&destination={quote(end_point)}&waypoints={waypoints}&mode=transit"
+            map_url = f"https://www.google.com/maps/embed/v1/directions?key={google_api_key}&origin={quote(start_point)}&destination={quote(end_point)}&waypoints={waypoints}&mode=transit"
         else:
-            map_url = f"https://www.google.com/maps/embed/v1/directions?key=MAP_KEY&origin={quote(start_point)}&destination={quote(end_point)}&mode=transit"
+            map_url = f"https://www.google.com/maps/embed/v1/directions?key={google_api_key}&origin={quote(start_point)}&destination={quote(end_point)}&mode=transit"
         
-        response = make_response(render_template("transit1.html", timeline_data=timeline_data, map_url=map_url))
+        response = make_response(render_template("transit1.html", timeline_data=timeline_data, map_url=map_url, google_api_key=os.getenv('MAP_KEY'), geoapify_api_key=os.getenv('GEOAPIFY_API_KEY')))
         response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
         response.headers['Pragma'] = 'no-cache'
 
@@ -55,8 +63,6 @@ def get_route():
     except Exception as e:
         print(f"Error processing route: {e}")
         return render_template("500.html"), 500
-
-
 
 @app.errorhandler(500)
 def internal_server_error(e):

@@ -36,7 +36,6 @@
           </div>
           <button type="submit">Submit</button>
         </form>
-
         <div
           class="autocomplete-suggestions"
           id="autocomplete_suggestions"
@@ -47,9 +46,8 @@
         loading="lazy"
         allowfullscreen
         referrerpolicy="no-referrer-when-downgrade"
-        src="https://www.google.com/maps/embed/v1/place?key=MAP_KEY&q=University of Illinois Urbana-Champaign,Champaign+IL"
-      >
-      </iframe>
+        src="https://www.google.com/maps/embed/v1/place?key={{ google_api_key }}&q=University of Illinois Urbana-Champaign,Champaign+IL"
+      ></iframe>
     </div>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -76,7 +74,7 @@
 
               if (value.length > 2) {
                 fetch(
-                  `https://api.geoapify.com/v1/geocode/autocomplete?text=${value}&apiKey=GEOAPIFY_API_KEY
+                  `https://api.geoapify.com/v1/geocode/autocomplete?text=${value}&apiKey={{ geoapify_api_key }}`
                 )
                   .then((response) => response.json())
                   .then((data) => {
@@ -101,11 +99,12 @@
                 suggestionsContainer.innerHTML = "";
               }
             }, 1000)
-          ); // 2-second delay
+          ); // 1-second delay
         }
 
         setupAutocomplete("start_point", "autocomplete_suggestions");
         setupAutocomplete("end_point", "autocomplete_suggestions");
+
         function extractPlaceName(formattedAddress) {
           const parts = formattedAddress.split(",");
           return parts[0];
