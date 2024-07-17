@@ -130,12 +130,12 @@
     </script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // selects all entries
-        const entries = document.querySelectorAll(".entry");
-        entries.forEach((entry) => {
-          // gets the color set for each entry
-          const color = entry.getAttribute("data-color");
-          entry.style.setProperty("--timeline-bar-color", color);
+        const markers = document.querySelectorAll(".entry .marker");
+        markers.forEach((marker) => {
+          const color = marker.getAttribute("data-color");
+          if (color) {
+            marker.style.setProperty("--timeline-bar-color", color);
+          }
         });
       });
       function extractPlaceName(formattedAddress) {
