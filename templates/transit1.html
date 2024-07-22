@@ -12,12 +12,51 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
     />
+    <style>
+      #loadingOverlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      #loadingOverlay .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border-top-color: #000;
+        animation: spin 1s ease-in-out infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .white-box {
+        position: relative; /* Add this to position the loading overlay */
+      }
+      .loading-message {
+        margin-top: 25px;
+        margin-left: 5px;
+        margin-right: 5px;
+        font-size: 25px;
+        text-align: center;
+        color: #333;
+      }
+    </style>
   </head>
   <body>
     <div class="overall">
       <div class="white-box">
         <h1>Illini Transit</h1>
-        <form action="/transit1" method="GET">
+        <form id="transitForm" action="/transit1" method="GET">
           <div class="input-container" style="position: relative">
             <input
               type="text"
@@ -40,6 +79,13 @@
           id="autocomplete_suggestions"
           class="autocomplete-suggestions hidden"
         ></div>
+        <div id="loadingOverlay">
+          <div class="spinner"></div>
+          <div class="loading-message">
+            This process can take up to 2 minutes.
+          </div>
+        </div>
+
         <div id="timeline" class="timeline">
           {% for entry in timeline_data %}
           <div class="entry">
@@ -61,7 +107,6 @@
           {% endfor %}
         </div>
       </div>
-      <!-- iframe moved outside of the white-box div -->
       <iframe
         class="map"
         loading="lazy"
@@ -121,14 +166,48 @@
                 suggestionsContainer.innerHTML = "";
               }
             }, 1000)
-          ); // 2-second delay
+          ); // 1-second delay
         }
 
         setupAutocomplete("start_point", "autocomplete_suggestions");
         setupAutocomplete("end_point", "autocomplete_suggestions");
+
+        function extractPlaceName(formattedAddress) {
+          const parts = formattedAddress.split(",");
+          return parts[0];
+        }
+
+        // Update timeline entries to show only the place name
+        document.addEventListener("DOMContentLoaded", function () {
+          const entries = document.querySelectorAll(".entry");
+          entries.forEach((entry) => {
+            const pathElement = entry.querySelector(".body p");
+            if (pathElement) {
+              const fullAddress = pathElement.innerText;
+              const placeName = extractPlaceName(fullAddress);
+              pathElement.innerText = placeName;
+            }
+          });
+        });
+
+        // Show loading screen
+        function showLoading() {
+          document.getElementById("loadingOverlay").style.display = "flex";
+        }
+
+        // Hide loading screen on page load
+        window.onload = function () {
+          document.getElementById("loadingOverlay").style.display = "none";
+        };
+
+        // Attach showLoading to form submit event
+        document
+          .getElementById("transitForm")
+          .addEventListener("submit", function () {
+            showLoading();
+          });
       });
-    </script>
-    <script>
+
       document.addEventListener("DOMContentLoaded", function () {
         const markers = document.querySelectorAll(".entry .marker");
         markers.forEach((marker) => {
@@ -138,6 +217,7 @@
           }
         });
       });
+
       function extractPlaceName(formattedAddress) {
         const parts = formattedAddress.split(",");
         return parts[0];

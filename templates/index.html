@@ -12,12 +12,52 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
     />
+    <style>
+      /* Loading screen styles */
+      #loadingOverlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      #loadingOverlay .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border-top-color: #000;
+        animation: spin 1s ease-in-out infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .white-box {
+        position: relative; /* Add this to position the loading overlay */
+      }
+      .loading-message {
+        margin-top: 25px;
+        margin-left: 5px;
+        margin-right: 5px;
+        font-size: 25px;
+        text-align: center;
+        color: #333;
+      }
+    </style>
   </head>
   <body>
     <div class="overall">
       <div class="white-box">
         <h1>Illini Transit</h1>
-        <form action="/transit1">
+        <form action="/transit1" method="GET">
           <div class="input-container" style="position: relative">
             <input
               type="text"
@@ -34,12 +74,18 @@
               placeholder="Enter end address"
             />
           </div>
-          <button type="submit">Submit</button>
+          <button type="submit" onclick="showLoading()">Submit</button>
         </form>
         <div
-          class="autocomplete-suggestions"
           id="autocomplete_suggestions"
+          class="autocomplete-suggestions hidden"
         ></div>
+        <div id="loadingOverlay">
+          <div class="spinner"></div>
+          <div class="loading-message">
+            This process can take up to 2 minutes.
+          </div>
+        </div>
       </div>
       <iframe
         class="map"
@@ -47,82 +93,91 @@
         allowfullscreen
         referrerpolicy="no-referrer-when-downgrade"
         src="https://www.google.com/maps/embed/v1/place?key={{ google_api_key }}&q=University of Illinois Urbana-Champaign,Champaign+IL"
-      ></iframe>
+      >
+      </iframe>
     </div>
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        function debounce(func, delay) {
-          let timeoutId;
-          return function (...args) {
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-            }
-            timeoutId = setTimeout(() => {
-              func.apply(this, args);
-            }, delay);
-          };
-        }
+      function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
+          timeoutId = setTimeout(() => {
+            func.apply(this, args);
+          }, delay);
+        };
+      }
 
-        function setupAutocomplete(inputId, suggestionsId) {
-          const input = document.getElementById(inputId);
-          const suggestionsContainer = document.getElementById(suggestionsId);
+      function setupAutocomplete(inputId, suggestionsId) {
+        const input = document.getElementById(inputId);
+        const suggestionsContainer = document.getElementById(suggestionsId);
 
-          input.addEventListener(
-            "input",
-            debounce(function () {
-              const value = input.value;
+        input.addEventListener(
+          "input",
+          debounce(function () {
+            const value = input.value;
 
-              if (value.length > 2) {
-                fetch(
-                  `https://api.geoapify.com/v1/geocode/autocomplete?text=${value}&apiKey={{ geoapify_api_key }}`
-                )
-                  .then((response) => response.json())
-                  .then((data) => {
-                    suggestionsContainer.innerHTML = "";
-                    if (data.features) {
-                      data.features.forEach((feature) => {
-                        let suggestionText = feature.properties.formatted;
-                        suggestionText = suggestionText.replace(/, [^,]*$/, ""); // Remove country
+            if (value.length > 2) {
+              fetch(
+                `https://api.geoapify.com/v1/geocode/autocomplete?text=${value}&apiKey={{ geoapify_api_key }}`
+              )
+                .then((response) => response.json())
+                .then((data) => {
+                  suggestionsContainer.innerHTML = "";
+                  if (data.features) {
+                    data.features.forEach((feature) => {
+                      let suggestionText = feature.properties.formatted;
+                      suggestionText = suggestionText.replace(/, [^,]*$/, ""); // Remove country
 
-                        const suggestion = document.createElement("div");
-                        suggestion.classList.add("autocomplete-suggestion");
-                        suggestion.innerText = suggestionText;
-                        suggestion.addEventListener("click", function () {
-                          input.value = suggestionText;
-                          suggestionsContainer.innerHTML = "";
-                        });
-                        suggestionsContainer.appendChild(suggestion);
+                      const suggestion = document.createElement("div");
+                      suggestion.classList.add("autocomplete-suggestion");
+                      suggestion.innerText = suggestionText;
+                      suggestion.addEventListener("click", function () {
+                        input.value = suggestionText;
+                        suggestionsContainer.innerHTML = "";
                       });
-                    }
-                  });
-              } else {
-                suggestionsContainer.innerHTML = "";
-              }
-            }, 1000)
-          ); // 1-second delay
-        }
-
-        setupAutocomplete("start_point", "autocomplete_suggestions");
-        setupAutocomplete("end_point", "autocomplete_suggestions");
-
-        function extractPlaceName(formattedAddress) {
-          const parts = formattedAddress.split(",");
-          return parts[0];
-        }
-
-        // Update timeline entries to show only the place name
-        document.addEventListener("DOMContentLoaded", function () {
-          const entries = document.querySelectorAll(".entry");
-          entries.forEach((entry) => {
-            const pathElement = entry.querySelector(".body p");
-            if (pathElement) {
-              const fullAddress = pathElement.innerText;
-              const placeName = extractPlaceName(fullAddress);
-              pathElement.innerText = placeName;
+                      suggestionsContainer.appendChild(suggestion);
+                    });
+                  }
+                });
+            } else {
+              suggestionsContainer.innerHTML = "";
             }
-          });
+          }, 1000)
+        ); // 1-second delay
+      }
+
+      setupAutocomplete("start_point", "autocomplete_suggestions");
+      setupAutocomplete("end_point", "autocomplete_suggestions");
+
+      function extractPlaceName(formattedAddress) {
+        const parts = formattedAddress.split(",");
+        return parts[0];
+      }
+
+      // Update timeline entries to show only the place name
+      document.addEventListener("DOMContentLoaded", function () {
+        const entries = document.querySelectorAll(".entry");
+        entries.forEach((entry) => {
+          const pathElement = entry.querySelector(".body p");
+          if (pathElement) {
+            const fullAddress = pathElement.innerText;
+            const placeName = extractPlaceName(fullAddress);
+            pathElement.innerText = placeName;
+          }
         });
       });
+
+      // Show loading screen
+      function showLoading() {
+        document.getElementById("loadingOverlay").style.display = "flex";
+      }
+
+      // Hide loading screen on page load
+      window.onload = function () {
+        document.getElementById("loadingOverlay").style.display = "none";
+      };
     </script>
   </body>
 </html>
