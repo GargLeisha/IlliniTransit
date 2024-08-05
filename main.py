@@ -18,6 +18,9 @@ def index():
     google_api_key = os.getenv('MAP_KEY')
     geoapify_api_key = os.getenv('GEOAPIFY_API_KEY')
     return render_template("index.html", google_api_key=google_api_key, geoapify_api_key=geoapify_api_key)
+@app.route('/about')
+def about():
+    return render_template("about.html")
 
 @app.route('/transit1')
 def get_route():

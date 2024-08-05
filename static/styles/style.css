@@ -13,6 +13,7 @@ body {
   grid-template-columns: 1fr 1.5fr;
   width: 100%;
   background-color: #fff;
+ 
 
 
 }
@@ -42,6 +43,7 @@ body {
   padding-top: 2rem;
   padding-bottom: 2rem;
   border-right: 3px solid #707372;
+  border-top: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -286,6 +288,33 @@ ul {
 .autocomplete-suggestion {
   padding: 12px;
   cursor: pointer;
+}
+.topnav {
+  background-color: #ffffff;
+  overflow: hidden;
+  border-bottom: 2.5px solid #707372;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  color: #707372;
+  text-align: center;
+  padding: 14px 30px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Add a color to the active/current link */
+.topnav a.active {
+  background-color: #13294B;
+  color: white;
 }
 .autocomplete-suggestion:hover {
   background-color: #f0f0f0;
